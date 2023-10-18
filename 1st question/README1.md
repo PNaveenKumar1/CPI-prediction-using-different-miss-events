@@ -15,7 +15,7 @@ Setup:
      vcpkg/vcpkg install
 
    Remove the files in ChampSim/branch and copy the files from subfolder of 1stquestion in ChampSim/branch.
-   Remove btb/basic_btb file from ChampSim and copy btb file from 1stquestion folder in ChampSim/btb. 
+   Remove btb/basic_btb file from ChampSim and copy basic_btb.cc file from 1stquestion folder in ChampSim/btb. 
 
    Make changes champsim_config.json as follows:
 
