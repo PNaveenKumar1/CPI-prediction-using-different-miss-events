@@ -1,29 +1,27 @@
 #include <map>
-
 #include "msl/fwcounter.h"
 #include "ooo_cpu.h"
 #include <cmath>
 #include "tage.h"
 #include <iostream>
-
-
-
 bool tp = false, pp = false;
 int per_out = 0;
 
 namespace
 {
-constexpr std::size_t BIMODAL_TABLE_SIZE = 4099;
-constexpr std::size_t BIMODAL_PRIME = 4099;
+#perceptron pred
+constexpr std::size_t PERCEPTRON_HISTORY = 143; // history length for the global history shift register
+constexpr std::size_t PERCEPTRON_BITS = 8;     // number of bits per weight
+constexpr std::size_t NUM_PERCEPTRONS = 100;
+constexpr std::size_t NUM_UPDATE_ENTRIES = 100;
+
+#meta predictor
+constexpr std::size_t META_PRED_ENTRIES= 4099;
+#constexpr std::size_t BIMODAL_PRIME = 4099;
 constexpr std::size_t COUNTER_BITS = 2;
 
 std::map<O3_CPU*, std::array<champsim::msl::fwcounter<COUNTER_BITS>, BIMODAL_TABLE_SIZE>> bimodal_table;
 } // namespace
-
-
-
-// part of perceptron predictor ends here
-//
 
 namespace
 {
@@ -34,21 +32,7 @@ class perceptron
   std::array<champsim::msl::sfwcounter<BITS>, HISTLEN> weights = {};
 
 public:
-  auto predict(std::bitset<HISTLEN> history)
-  {
-    auto output = bias.value();
-
-    // find the (rest of the) dot product of the history register and the perceptron weights.
-    for (std::size_t i = 0; i < std::size(history); i++) {
-      if (history[i])
-        output += weights[i].value();
-      else
-        output -= weights[i].value();
-    }
-
-    return output;
-  }
-
+  
   void update(bool result, std::bitset<HISTLEN> history)
   {
     // if the branch was taken, increment the bias weight, else decrement it, with saturating arithmetic
@@ -63,12 +47,7 @@ public:
     }
   }
 };
-
-constexpr std::size_t PERCEPTRON_HISTORY = 143; // history length for the global history shift register
-constexpr std::size_t PERCEPTRON_BITS = 8;     // number of bits per weight
-constexpr std::size_t NUM_PERCEPTRONS = 100;
-
-constexpr std::size_t NUM_UPDATE_ENTRIES = 100; // size of buffer for keeping 'perceptron_state' for update
+ // size of buffer for keeping 'perceptron_state' for update
 
 /* 'perceptron_state' - stores the branch prediction and keeps information
  * such as output and history needed for updating the perceptron predictor
@@ -90,6 +69,20 @@ std::map<O3_CPU*, std::bitset<PERCEPTRON_HISTORY>> global_history;      // real 
 
 //
 // part of perceptron predictor ends here
+auto predict(std::bitset<HISTLEN> history)
+  {
+    auto output = bias.value();
+
+    // find the (rest of the) dot product of the history register and the perceptron weights.
+    for (std::size_t i = 0; i < std::size(history); i++) {
+      if (history[i])
+        output += weights[i].value();
+      else
+        output -= weights[i].value();
+    }
+
+    return output;
+  }
 
 
 
@@ -99,7 +92,7 @@ void O3_CPU::initialize_branch_predictor() {
    
 }
 
-// take perceptron if 1x, tage if 0x
+// take perceptron if 1x, tage if 0x 
 uint8_t O3_CPU::predict_branch(uint64_t ip)
 {
   auto hash = ip % ::BIMODAL_PRIME;
