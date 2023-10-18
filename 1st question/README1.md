@@ -20,7 +20,7 @@ Setup:
    Make changes champsim_config.json as follows:
 
    1) In champsim_config
-      change "branchpredictor" : <predictor> 
+      change "branchpredictor" : "predictor"
       Here the <predictor> is the branch predictor you want to run.
    
    
