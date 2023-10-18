@@ -1,6 +1,4 @@
-//
-// Created by pwwpche on 5/22/17.
-//
+
 
 #ifndef TAGE_MASTER_TAGE_H
 #define TAGE_MASTER_TAGE_H
