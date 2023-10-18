@@ -21,7 +21,7 @@ Setup:
 
    1) In champsim_config
       change "branchpredictor" : "predictor"
-      Here the <predictor> is the branch predictor you want to run.
+      Here the "predictor" is the branch predictor you want to run.
    
    
 Parameter Changes:
