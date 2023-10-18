@@ -105,9 +105,6 @@ uint8_t O3_CPU::predict_branch(uint64_t ip)
   per_out = ::perceptrons[this][index].predict(::spec_global_history[this]);
 
   bool prediction = (per_out >= 0);
-
-  // record the various values needed to update the predictor
-
   pp = prediction;
 
   if (value >= 2) return pp;
@@ -119,14 +116,6 @@ void O3_CPU::last_branch_result(uint64_t ip, uint64_t branch_target, uint8_t tak
 
   auto hash = ip % ::BIMODAL_PRIME;
 
-  // ::bimodal_table[this][hash] += taken ? 1 : -1;
-
-
-// sklearn
-// xgboost -- xgbR
-// gradientboosting
-// svr
-// k means regressor
 
   // taken -- 
   if (::bimodal_table[this][hash] >= 2) { // we selected perceptron
@@ -143,11 +132,6 @@ void O3_CPU::last_branch_result(uint64_t ip, uint64_t branch_target, uint8_t tak
     }
   }
 
-  
-
-
-
-  // first update tage, because perceptron may return early
   // 
   tage_train(ip,taken);
 
@@ -175,9 +159,6 @@ void O3_CPU::last_branch_result(uint64_t ip, uint64_t branch_target, uint8_t tak
   // update the real global history shift register
   ::global_history[this] <<= 1;
   ::global_history[this].set(0, taken);
-
-  // if this branch was mispredicted, restore the speculative history to the
-  // last known real history
   if (prediction != taken)
     ::spec_global_history[this] = ::global_history[this];
 
@@ -187,8 +168,5 @@ void O3_CPU::last_branch_result(uint64_t ip, uint64_t branch_target, uint8_t tak
   const int THETA = std::floor(1.93 * PERCEPTRON_HISTORY + 14); // threshold for training
   if ((output <= THETA && output >= -THETA) || (prediction != taken))
     ::perceptrons[this][index].update(taken, history);
-
-  // end of update of perceptron
-
 }
 
